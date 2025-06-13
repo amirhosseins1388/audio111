@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎵 پلی‌لیست صوتی</title>
+  <style>
+    @font-face {
+  font-family: 'Sahel';
+  src: url('fonts/Sahel-Bold-FD.woff') format('woff'),
+       url('fonts/Sahel-Bold-FD.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+  *{
+    font-family: 'Sahel';
+  }
+    body {
+      margin: 0;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+      direction: rtl;
+
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+
+      min-height: 100vh;
+      text-align: center;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 700px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 2rem;
+      margin-bottom: 20px;
+    }
+
+    button {
+      font-size: 1rem;
+      padding: 10px 20px;
+      margin: 5px;
+      background-color: #00c853;
+      border: none;
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn {
+      transition: all 0.1s ease-in-out;
+      box-shadow: 0 3px 6px rgba(0,0,0,0.2);
+    }
+
+    .btn:hover {
+      background-color: #00b94f;
+    }
+
+    .btn:active {
+      transform: scale(0.95);
+      background-color: #009624;
+      box-shadow: inset 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    .controls, .controls {
+      margin: 15px 0;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      width: 100%;
+    }
+        .controls .btn {
+      margin: 5px 0;
+      width: 300px;
+      padding: 10px;
+    }
+        .controls2 .btn {
+      margin: 5px 20px;
+      width: 150px;
+      padding: 10px;
+    }
+
+    .audio-wrapper {
+      max-width: 500px;
+      width: 100%;
+      margin: 20px auto;
+    }
+
+    audio {
+      width: 100%;
+      display: block;
+      border-radius: 8px;
+      outline: none;
+    }
+
+    ul#trackList {
+      list-style: none;
+      padding: 0;
+      margin-top: 20px;
+      max-height: 40vh;
+      overflow-y: auto;
+      width: 100%;
+      display: none;
+      border-radius: 10px;
+    }
+
+    ul#trackList.open {
+      display: block;
+      background: rgba(0, 0, 0, 0.4);
+      padding: 10px 15px;
+    }
+
+    ul#trackList li {
+      background: rgba(255, 255, 255, 0.1);
+      padding: 10px 15px;
+      margin: 5px 0;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: background 0.3s;
+      text-align: center;
+    }
+
+    ul#trackList li.active {
+      background: rgba(0, 255, 150, 0.3);
+      font-weight: bold;
+    }
+
+    .toggleListBtn {
+      margin: 10px 0;
+    }
+
+    @media (min-width: 768px) {
+      ul#trackList.open {
+        background: rgba(0, 0, 0, 0.4);
+      }
+
+      audio, .controls, .toggleListBtn {
+        margin-right: 0;
+      }
+
+      .controls {
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🎧 پلی‌لیست صوتی</h1>
+
+    <div class="controls">
+      <button class="btn" onclick="playCurrent()">▶ شروع پخش</button>
+    </div>
+    <div class="controls2">
+      <button class="btn" onclick="prevTrack()">⏮ قبلی</button>
+      <button class="btn" onclick="nextTrack()">⏭ بعدی</button>
+    </div>
+
+    <div class="audio-wrapper">
+      <audio id="audioPlayer" controls></audio>
+    </div>
+
+    <button class="toggleListBtn btn" onclick="toggleTrackList()">📃 نمایش/مخفی‌کردن لیست</button>
+
+    <ul id="trackList"></ul>
+  </div>
+
+  <script>
+    const playlist = [
+      { title: "بابا حیدر", file: "باباحیدر.mp3" },
+      { title: "جان نجف", file: "جان_نجف.mp3" },
+      { title: "نماهنگ قافیه ها", file: "قافیه_ها.mp3" },
+      { title: "نماهنگ مصاحبه", file: "مصاحبه.mp3" },
+      { title: "مولا همیشه مولاست", file: "مولا_همیشه_مولاست.mp3" },
+      { title: "نماهنگ حبل المتین عالم", file: "حبل_المتین_عالم.mp3" },
+      { title: "مولا - مجال", file: "mojal-molaa.mp3" },
+      { title: "روزمو با یاعلی آغاز میکنم", file: "روزمو_با_یاعلی_آغاز_میکنم.mp3" },
+      { title: "حیدره باخ", file: "حیدره_باخ.mp3" },
+      { title: "صبح غدیر علی", file: "صبح_غدیر_علی.mp3" },
+      { title: "عدل موثق", file: "عدل_موثق.mp3" },
+      { title: "عشق بین‌المللی", file: "عشق_بین_المللی.mp3" },
+      { title: "علی - محسن چاووشی", file: "علی_محسن.mp3" },
+      { title: "ماه من علی ۱", file: "ماه_من_علی.mp3" },
+      { title: "ماه من علی ۲", file: "ماه_من_علی2.mp3" },
+      { title: "نور علی", file: "نور_علی.mp3" },
+      { title: "ولی الله یا حیدر", file: "ولی_الله_یاحیدر.mp3" },
+      { title: "ایلیا", file: "ایلیا.mp3" },
+      { title: "بند نعلین علی", file: "بند_علی.mp3" },
+      { title: "تبار علی", file: "تبار_علی.mp3" },
+      { title: "حب علی", file: "حب_علی.mp3" },
+      { title: "حیدر مولا", file: "حیدر_مولا.mp3" },
+      { title: "شاه مردان", file: "شاه_مردان.mp3" },
+      { title: "مست نجف", file: "مست_نجف.mp3" },
+      { title: "منی که از تولدم", file: "منی_که.mp3" },
+      { title: "فوق بشر", file: "فوق_بشر.mp3" },
+      { title: "سلطان جهان", file: "سلطان_جهان.mp3" },
+      { title: "به به به نجف", file: "به_به_به_نجف.mp3" },
+      { title: "بیعت با تو", file: "بیعت_باتو.mp3" }
+    ];
+
+    let currentTrack = 0;
+    const audioPlayer = document.getElementById('audioPlayer');
+    const trackList = document.getElementById('trackList');
+
+    function renderTrackList() {
+      trackList.innerHTML = '';
+      playlist.forEach((track, index) => {
+        const li = document.createElement('li');
+        li.textContent = track.title;
+        li.onclick = () => {
+          currentTrack = index;
+          updateAudioSource();
+          audioPlayer.play().catch(err => {
+            console.warn("پخش انجام نشد:", err.message);
+          });
+          highlightCurrentTrack();
+        };
+        if (index === currentTrack) li.classList.add('active');
+        trackList.appendChild(li);
+      });
+    }
+
+    function highlightCurrentTrack() {
+      const items = trackList.querySelectorAll('li');
+      items.forEach((li, i) => {
+        li.classList.toggle('active', i === currentTrack);
+      });
+    }
+
+    function updateAudioSource() {
+      audioPlayer.src = playlist[currentTrack].file;
+      audioPlayer.load();
+      highlightCurrentTrack();
+    }
+
+    function playCurrent() {
+      updateAudioSource();
+      audioPlayer.play().catch(err => {
+        console.warn("پخش انجام نشد:", err.message);
+      });
+    }
+
+    function nextTrack() {
+      if (currentTrack < playlist.length - 1) {
+        currentTrack++;
+        updateAudioSource();
+        audioPlayer.play().catch(err => {
+          console.warn("پخش انجام نشد:", err.message);
+        });
+      }
+    }
+
+    function prevTrack() {
+      if (currentTrack > 0) {
+        currentTrack--;
+        updateAudioSource();
+        audioPlayer.play().catch(err => {
+          console.warn("پخش انجام نشد:", err.message);
+        });
+      }
+    }
+
+    function toggleTrackList() {
+      trackList.classList.toggle('open');
+    }
+
+    audioPlayer.addEventListener("ended", () => {
+      if (currentTrack < playlist.length - 1) {
+        currentTrack++;
+        updateAudioSource();
+        audioPlayer.play().catch(err => {
+          console.warn("پخش خودکار انجام نشد:", err.message);
+        });
+      }
+    });
+
+    renderTrackList();
+    updateAudioSource();
+  </script>
+</body>
+</html>
